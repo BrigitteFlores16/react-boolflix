@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 const apikey = import.meta.env.VITE_THEMOVIEDB_API_KEY;
 export default function Header({ onSearch }) {
@@ -10,14 +9,22 @@ export default function Header({ onSearch }) {
   };
 
   const handleSearch = () => {
-    const url = `https://api.themoviedb.org/3/search/movie?query=${query}&api_key=${apikey}&include_adult=false&language=en-US&page=1`;
+    const movieUrl = `https://api.themoviedb.org/3/search/movie?query=${query}&api_key=${apikey}&include_adult=false&language=en-US&page=1`;
+    const tvUrl = `https://api.themoviedb.org/3/search/tv?query=${query}&api_key=${apikey}&include_adult=false&language=en-US&page=1`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((json) => onSearch(json.results))
+    Promise.all([
+      fetch(movieUrl).then((res) => res.json()),
+      fetch(tvUrl).then((res) => res.json()),
+    ])
+      .then(([movieData, tvData]) => {
+        const combinedResults = [
+          ...movieData.results.map((movie) => ({ ...movie, type: "movie" })),
+          ...tvData.results.map((tv) => ({ ...tv, type: "tv" })),
+        ];
+        onSearch(combinedResults);
+      })
       .catch((err) => console.error(err));
   };
-
   return (
     <header className="bg-dark text-light p-3">
       <div className="container d-flex justify-content-between align-items-center">
@@ -48,7 +55,7 @@ export default function Header({ onSearch }) {
           <input
             type="text"
             className="form-control me-2"
-            placeholder="Cerca un film..."
+            placeholder="Scrivi qui..."
             value={query}
             onChange={handleInputChange}
           />
