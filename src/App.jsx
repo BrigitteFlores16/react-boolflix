@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "./components/Header";
 import Main from "./components/Main";
-
+import { GlobalContextProvider } from "./contexts/GlobalContext";
 export default function App() {
   const [movies, setMovies] = useState([]);
 
@@ -11,8 +11,10 @@ export default function App() {
 
   return (
     <div>
-      <Header onSearch={handleSearch} />
-      <Main movies={movies} />
+      <GlobalContextProvider>
+        <Header onSearch={handleSearch} />
+        <Main movies={movies} />
+      </GlobalContextProvider>
     </div>
   );
 }
