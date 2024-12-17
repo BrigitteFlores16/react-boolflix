@@ -1,30 +1,45 @@
 import React, { useState } from "react";
 
-const apikey = import.meta.env.VITE_THEMOVIEDB_API_KEY;
 export default function Header({ onSearch }) {
   const [query, setQuery] = useState("");
-
+  const apikey = import.meta.env.VITE_THEMOVIEDB_API_KEY;
   const handleInputChange = (e) => {
     setQuery(e.target.value);
   };
 
   const handleSearch = () => {
     const movieUrl = `https://api.themoviedb.org/3/search/movie?query=${query}&api_key=${apikey}&include_adult=false&language=en-US&page=1`;
-    const tvUrl = `https://api.themoviedb.org/3/search/tv?query=${query}&api_key=${apikey}&include_adult=false&language=en-US&page=1`;
+    const serietvUrl = `https://api.themoviedb.org/3/search/tv?query=${query}&api_key=${apikey}&include_adult=false&language=en-US&page=1`;
+    const options = {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization:
+          "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ZDk1MTQxZDQxMzkwYmFlYjUxYmJjODNkOTA4ZmJlMSIsIm5iZiI6MTczNDM1NzAxOC4zOTM5OTk4LCJzdWIiOiI2NzYwMzAxYTViZDY2YTVlNTgxMzE1NWEiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.8ETc1LYZo8UPiLQDUDuOYRUD3JV-5uFVciRiboRuFgc",
+      },
+    };
 
-    Promise.all([
-      fetch(movieUrl).then((res) => res.json()),
-      fetch(tvUrl).then((res) => res.json()),
-    ])
-      .then(([movieData, tvData]) => {
-        const combinedResults = [
-          ...movieData.results.map((movie) => ({ ...movie, type: "movie" })),
-          ...tvData.results.map((tv) => ({ ...tv, type: "tv" })),
-        ];
-        onSearch(combinedResults);
-      })
-      .catch((err) => console.error(err));
+    fetch(movieUrl, options)
+      .then((res) => res.json())
+      .then((movieData) => {
+        const movieResults = movieData.results.map((movie) => ({
+          ...movie,
+          type: "movie",
+        }));
+        onSearch(movieResults);
+      });
+
+    fetch(serietvUrl, options)
+      .then((res) => res.json())
+      .then((serietvData) => {
+        const serietvResults = serietvData.results.map((serietv) => ({
+          ...serietv,
+          type: "serietv",
+        }));
+        onSearch(serietvResults);
+      });
   };
+
   return (
     <header className="bg-dark text-light p-3">
       <div className="container d-flex justify-content-between align-items-center">
